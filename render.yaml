@@ -1,0 +1,28 @@
+services:
+  # 1. FastAPI Backend Web Service
+  - type: web
+    name: bingo-telegram-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: BOT_TOKEN
+        value: 7631583464:AAFpsgbtwfdxCCEwUvwhwyGhf-oo1TgzhQA
+      - key: SECRET_KEY
+        generateValue: true
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: bingo-redis
+          property: connectionString
+
+  # 2. Redis Cache & Event Bus
+  - type: redis
+    name: bingo-redis
+    plan: free
+    maxmemoryPolicy: noeviction
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere

@@ -1,0 +1,447 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap');
+
+:root {
+  /* Backgrounds - GoodBingo Light Slate & White Design */
+  --bg-app: #EBF1F7;                  /* Light slate app background */
+  --bg-card-surface: #FFFFFF;         /* Pure white container cards */
+  --bg-grid-cell: #F1F5F9;             /* Light grey cell background */
+  --bg-dark-banner: #1E293B;          /* Dark navy banner containers */
+
+  /* Primary & Accent Colors */
+  --brand-gold: #F59E0B;              /* Golden yellow badges & borders */
+  --brand-blue: #2563EB;              /* Primary action blue (BINGO! button) */
+  --brand-green: #10B981;             /* Matched pattern green & balance */
+  --brand-red: #EF4444;               /* Warning text & callout badge */
+
+  /* Column Colors (B-I-N-G-O) */
+  --col-b: #3B82F6;                   /* Bright Blue */
+  --col-i: #EF4444;                   /* Vibrant Red */
+  --col-n: #F59E0B;                   /* Amber Gold */
+  --col-g: #10B981;                   /* Emerald Green */
+  --col-o: #8B5CF6;                   /* Purple */
+
+  /* Legacy Compat Variables */
+  --primary-gold: var(--brand-gold);
+  --primary-gold-glow: rgba(245, 158, 11, 0.25);
+  --accent-cyan: #2563EB;
+  --accent-cyan-glow: rgba(37, 99, 235, 0.25);
+  --text-main: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --bg-card-border: #E2E8F0;
+
+  --letter-b: var(--col-b);
+  --letter-i: var(--col-i);
+  --letter-n: var(--col-n);
+  --letter-g: var(--col-g);
+  --letter-o: var(--col-o);
+
+  /* Typography & Radii */
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .font-heading {
+  font-family: var(--font-heading);
+}
+
+/* App Container */
+.app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-bottom: 80px;
+  background-color: var(--bg-app);
+}
+
+/* Header Navbar */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--bg-dark-banner);
+  color: #FFFFFF;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--brand-gold);
+}
+
+.wallet-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--brand-gold);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  z-index: 100;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.nav-item.active {
+  color: var(--brand-blue);
+
+  svg {
+    filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.4));
+  }
+}
+
+/* White Container Card Surface */
+.glass-card, .card-surface {
+  background: var(--bg-card-surface);
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin: 12px 16px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+}
+
+.gold-border {
+  border: 2px solid var(--brand-gold);
+}
+
+/* Dark Banner Header Cards */
+.dark-banner {
+  background: var(--bg-dark-banner);
+  color: #FFFFFF;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+}
+
+/* Buttons */
+.btn-primary {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--brand-blue);
+  color: #FFFFFF;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.btn-cyan, .btn-gold {
+  background: var(--brand-gold);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+}
+
+.btn-green {
+  background: var(--brand-green);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+/* 5x5 Bingo Grid Matrix */
+.bingo-grid-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.bingo-headers {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  width: 100%;
+  max-width: 340px;
+  gap: 6px;
+}
+
+.letter-header {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 900;
+  border-radius: var(--radius-sm);
+  color: #FFF;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.letter-b { background: var(--col-b); }
+.letter-i { background: var(--col-i); }
+.letter-n { background: var(--col-n); }
+.letter-g { background: var(--col-g); }
+.letter-o { background: var(--col-o); }
+
+.bingo-matrix {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  width: 100%;
+  max-width: 340px;
+  gap: 6px;
+}
+
+.bingo-cell {
+  aspect-ratio: 1;
+  background: var(--bg-grid-cell);
+  border: 1px solid #CBD5E1;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--text-main);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.bingo-cell.marked {
+  background: var(--brand-gold);
+  border-color: #D97706;
+  color: #FFFFFF;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+  transform: scale(1.03);
+}
+
+.bingo-cell.winning-pattern {
+  background: var(--brand-green) !important;
+  border-color: #059669 !important;
+  color: #FFFFFF !important;
+}
+
+.bingo-cell.free-space {
+  background: var(--brand-gold);
+  border-color: #D97706;
+  color: #FFFFFF;
+  font-size: 1.3rem;
+}
+
+/* Callout Banner & Floating Ball */
+.callout-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 18px;
+  background: var(--bg-dark-banner);
+  color: #FFFFFF;
+  border: 2px solid var(--brand-gold);
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  margin: 10px auto;
+  width: fit-content;
+}
+
+.callout-ball {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 1.3rem;
+  color: #FFF;
+  box-shadow: inset 0 -3px 5px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Slot Selection Dock */
+.slot-dock {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.slot-card {
+  border: 2px dashed #94A3B8;
+  border-radius: var(--radius-md);
+  padding: 12px;
+  text-align: center;
+  background: #F8FAFC;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slot-card.filled {
+  border: 2px solid var(--brand-blue);
+  background: #EFF6FF;
+}
+
+/* Vertical 5x15 Master Board Container */
+.master-board-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #F8FAFC;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid #E2E8F0;
+}
+
+.master-board-cell {
+  width: 100%;
+  height: 22px;
+  border-radius: 4px;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #64748B;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.master-board-cell.called {
+  background: var(--brand-gold);
+  color: #FFFFFF;
+  border-color: #D97706;
+}
+
+.master-board-cell.latest {
+  background: var(--brand-green);
+  color: #FFFFFF;
+  border-color: #059669;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+}
+
+/* Winner Modal Pagination Carousel */
+.carousel-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.carousel-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--brand-blue);
+  color: #FFFFFF;
+  border: none;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #CBD5E1;
+}
+
+.dot.active {
+  background: var(--brand-blue);
+  width: 16px;
+  border-radius: 4px;
+}
+
+/* Animations */
+@keyframes popIn {
+  0% { transform: scale(0.92); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-pop {
+  animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}

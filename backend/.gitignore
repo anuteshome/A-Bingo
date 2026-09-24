@@ -1,0 +1,6 @@
+.env 
+*.pyc 
+bingo.db 
+__pycache__
+.venv
+frontend/node_modules

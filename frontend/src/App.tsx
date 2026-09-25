@@ -38,10 +38,13 @@ const MainApp: React.FC = () => {
   }
 
   const isLoggedIntoAdmin = activeTab === 'admin' && isAdmin;
+  const isPlayingGame = activeTab === 'game';
 
   return (
-    <div className="app-container">
-      <Header activeTab={activeTab} onLogoutAdmin={handleAdminLogout} />
+    <div className="app-container" style={{ paddingBottom: isPlayingGame ? 0 : 80 }}>
+      {!isPlayingGame && (
+        <Header activeTab={activeTab} onLogoutAdmin={handleAdminLogout} />
+      )}
 
       <main style={{ flex: 1 }}>
         {activeTab === 'lobby' && (
@@ -85,7 +88,7 @@ const MainApp: React.FC = () => {
         )}
       </main>
 
-      {!isLoggedIntoAdmin && (
+      {!isLoggedIntoAdmin && !isPlayingGame && (
         <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
       )}
     </div>

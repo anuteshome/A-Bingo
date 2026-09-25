@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { apiService } from '../../services/api';
 import { triggerHaptic } from '../../utils/telegram';
-import { Flame, ArrowLeft, Hourglass, XCircle } from 'lucide-react';
+import { Star, XCircle, RefreshCw } from 'lucide-react';
 import { WinnerModal } from '../../components/game/WinnerModal';
 
 interface BingoGameViewProps {
@@ -17,9 +17,17 @@ interface BingoGameViewProps {
   onBack: () => void;
 }
 
+const DEFAULT_CARD_MATRIX = [
+  [7, 20, 44, 56, 61],
+  [15, 26, 36, 55, 62],
+  [5, 17, 0, 54, 69],
+  [8, 25, 34, 52, 65],
+  [3, 18, 31, 57, 66]
+];
+
 export const BingoGameView: React.FC<BingoGameViewProps> = ({ roundId, purchasedCard, onBack }) => {
   const { token, refreshBalance } = useAuth();
-  const { connected, drawnNumbers, latestDrawn, roundStatus, winnerEvent } = useWebSocket(roundId, token);
+  const { drawnNumbers, latestDrawn, roundStatus, winnerEvent } = useWebSocket(roundId, token);
 
   const [markedCells, setMarkedCells] = useState<Set<string>>(new Set(['2-2']));
   const [claiming, setClaiming] = useState(false);
@@ -27,17 +35,19 @@ export const BingoGameView: React.FC<BingoGameViewProps> = ({ roundId, purchased
   const [disqualifiedReason, setDisqualifiedReason] = useState<string>('');
   const [showWinnerModal, setShowWinnerModal] = useState(false);
 
+  // Active matrix & card number (fallback to screenshot card #39 if null)
+  const activeMatrix = purchasedCard?.grid_matrix || DEFAULT_CARD_MATRIX;
+  const cardNum = purchasedCard?.card_number || 39;
+
   // Set of numbers drawn so far
   const drawnSet = new Set(drawnNumbers.map(d => d.number));
 
   // Auto-mark drawn numbers on card
   useEffect(() => {
-    if (!purchasedCard) return;
     const newMarked = new Set(markedCells);
-
     for (let r = 0; r < 5; r++) {
       for (let c = 0; c < 5; c++) {
-        const val = purchasedCard.grid_matrix[r][c];
+        const val = activeMatrix[r][c];
         if (r === 2 && c === 2) {
           newMarked.add('2-2');
         } else if (val !== 0 && drawnSet.has(val)) {
@@ -75,11 +85,12 @@ export const BingoGameView: React.FC<BingoGameViewProps> = ({ roundId, purchased
   };
 
   const handleBingoClaim = async () => {
-    if (!token || !purchasedCard) return;
+    if (!token) return;
     setClaiming(true);
     setDisqualified(false);
     try {
-      await apiService.claimBingo(token, roundId, purchasedCard.card_id);
+      const cardIdToClaim = purchasedCard?.card_id || 'demo-card-39';
+      await apiService.claimBingo(token, roundId, cardIdToClaim);
       triggerHaptic('success');
       confetti({
         particleCount: 220,
@@ -108,140 +119,152 @@ export const BingoGameView: React.FC<BingoGameViewProps> = ({ roundId, purchased
     }
   }, [roundId, token, roundStatus]);
 
-  // Derive recent 3 callouts for header list
+  // Derive recent 3 callouts
   const recentCallouts = drawnNumbers.slice(-3).reverse();
 
-  // DERASH / Prize Pool display calculation
-  const derashVal = 3448; // GoodBingo baseline
-
   return (
-    <div style={{ padding: '12px 16px' }}>
-      {/* 1. Header Navigation Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <button 
-          onClick={onBack}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#2563EB',
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100%', background: '#EBF1F7', overflow: 'hidden' }}>
+      
+      {/* 1. Header Bar (DERASH 3360 ETB | BALLS 0/75 | PLAYERS 420 | Callout Ball) */}
+      <div style={{
+        background: '#131C2E',
+        color: '#FFFFFF',
+        padding: '6px 14px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        position: 'relative',
+        height: '52px',
+        boxSizing: 'border-box',
+        zIndex: 20
+      }}>
+        {/* DERASH */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ fontSize: '0.62rem', fontWeight: 800, color: '#8A99AD', letterSpacing: '0.5px' }}>DERASH</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px' }}>
+            <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#10B981', lineHeight: '1.1' }}>3360</span>
+            <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#10B981' }}>ETB</span>
+          </div>
+        </div>
+
+        {/* BALLS */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.62rem', fontWeight: 800, color: '#8A99AD', letterSpacing: '0.5px' }}>BALLS</span>
+          <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#FFFFFF', lineHeight: '1.1' }}>
+            {drawnNumbers.length}<span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700 }}>/75</span>
+          </div>
+        </div>
+
+        {/* PLAYERS */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginRight: '60px' }}>
+          <span style={{ fontSize: '0.62rem', fontWeight: 800, color: '#8A99AD', letterSpacing: '0.5px' }}>PLAYERS</span>
+          <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#F59E0B', lineHeight: '1.1' }}>420</span>
+        </div>
+
+        {/* Top-Right Callout Ball Badge */}
+        <div style={{
+          position: 'absolute',
+          right: '12px',
+          top: '4px',
+          width: '74px',
+          height: '74px',
+          borderRadius: '50%',
+          background: '#EBF1F7',
+          border: '3px dashed #CBD5E1',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
+          zIndex: 30
+        }}>
+          <div style={{
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            background: '#FFFFFF',
             display: 'flex',
             alignItems: 'center',
-            gap: '4px',
-            fontWeight: 700,
-            fontSize: '0.85rem',
-            cursor: 'pointer'
-          }}
-        >
-          <ArrowLeft className="w-4 h-4" /> Lobby
-        </button>
-
-        <span style={{
-          fontSize: '0.72rem',
-          padding: '4px 10px',
-          borderRadius: '999px',
-          background: connected ? '#DCFCE7' : '#FEE2E2',
-          color: connected ? '#166534' : '#991B1B',
-          fontWeight: 800
-        }}>
-          {connected ? '● LIVE' : '○ CONNECTING...'}
-        </span>
-      </div>
-
-      {/* 2. Top Stats Banner Bar (DERASH 3448 ETB | BALLS 10/75 | PLAYERS 431 | ( G-50 )) */}
-      <div style={{
-        background: '#1E293B',
-        color: '#FFFFFF',
-        borderRadius: 'var(--radius-md)',
-        padding: '10px 14px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '12px',
-        fontSize: '0.82rem',
-        fontWeight: 800
-      }}>
-        <div style={{ color: '#F59E0B' }}>DERASH {derashVal} ETB</div>
-        <div>BALLS {drawnNumbers.length}/75</div>
-        <div>PLAYERS 431</div>
-        {latestDrawn ? (
-          <div style={{
-            background: '#F59E0B',
-            color: '#FFFFFF',
-            padding: '2px 8px',
-            borderRadius: '999px',
-            fontSize: '0.78rem'
+            justifyContent: 'center',
+            fontWeight: 900,
+            fontSize: '1.8rem',
+            color: '#2563EB'
           }}>
-            ( {latestDrawn.letter}-{latestDrawn.number} )
+            {latestDrawn ? latestDrawn.number : 1}
           </div>
-        ) : (
-          <div style={{ color: '#94A3B8' }}>( -- )</div>
-        )}
+        </div>
       </div>
 
-      {/* 3. Spectator Mode Check: If no purchased card and round in progress */}
-      {!purchasedCard ? (
-        <div className="glass-card" style={{
-          textAlign: 'center',
-          padding: '36px 20px',
-          background: '#FFFFFF',
-          borderRadius: 'var(--radius-lg)',
-          border: '2px solid #E2E8F0'
+      {/* 2. Main Play Body */}
+      <div style={{ display: 'flex', flex: 1, width: '100%', height: 'calc(100vh - 52px)', background: '#EBF1F7', overflow: 'hidden' }}>
+        
+        {/* Left Column: Master Board 5x15 */}
+        <div style={{
+          width: '125px',
+          display: 'flex',
+          flexDirection: 'column',
+          background: '#EBF1F7',
+          borderRight: '1px solid #D1D5DB',
+          height: '100%'
         }}>
-          <Hourglass style={{
-            width: '64px',
-            height: '64px',
-            color: '#F59E0B',
-            margin: '0 auto 16px auto',
-            animation: 'spin 4s infinite linear'
-          }} />
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 900, color: '#1E293B', marginBottom: '8px' }}>
-            SPECTATOR MODE
-          </h3>
-          <p style={{ fontSize: '0.88rem', fontWeight: 700, color: '#64748B', lineHeight: '1.4', marginBottom: '20px' }}>
-            GAME IN PROGRESS - PLEASE WAIT FOR THE NEXT BUYING ROUND TO JOIN.
-          </p>
-          <button className="btn-primary" onClick={onBack}>
-            Return to Room Selection
-          </button>
-        </div>
-      ) : (
-        /* 4. Live Play View: Master Board (Left) & Card Grid (Right) */
-        <div style={{ display: 'grid', gridTemplateColumns: '84px 1fr', gap: '10px', alignItems: 'start' }}>
-          
-          {/* Vertical 5x15 Master Board (Left) */}
-          <div className="master-board-vertical">
-            <div style={{ fontSize: '0.68rem', fontWeight: 900, textAlign: 'center', color: '#1E293B', marginBottom: '2px' }}>
-              BOARD
-            </div>
+          {/* Header B I N G O */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: '2px',
+            padding: '3px 3px 2px 3px',
+            background: '#EBF1F7'
+          }}>
+            <div style={{ background: '#2563EB', color: '#FFF', fontWeight: 900, fontStyle: 'italic', fontSize: '0.8rem', textAlign: 'center', borderRadius: '3px', padding: '2px 0' }}>B</div>
+            <div style={{ background: '#EF4444', color: '#FFF', fontWeight: 900, fontStyle: 'italic', fontSize: '0.8rem', textAlign: 'center', borderRadius: '3px', padding: '2px 0' }}>I</div>
+            <div style={{ background: '#F59E0B', color: '#FFF', fontWeight: 900, fontStyle: 'italic', fontSize: '0.8rem', textAlign: 'center', borderRadius: '3px', padding: '2px 0' }}>N</div>
+            <div style={{ background: '#10B981', color: '#FFF', fontWeight: 900, fontStyle: 'italic', fontSize: '0.8rem', textAlign: 'center', borderRadius: '3px', padding: '2px 0' }}>G</div>
+            <div style={{ background: '#8B5CF6', color: '#FFF', fontWeight: 900, fontStyle: 'italic', fontSize: '0.8rem', textAlign: 'center', borderRadius: '3px', padding: '2px 0' }}>O</div>
+          </div>
 
-            {[
-              { letter: 'B', range: [1, 15] },
-              { letter: 'I', range: [16, 30] },
-              { letter: 'N', range: [31, 45] },
-              { letter: 'G', range: [46, 60] },
-              { letter: 'O', range: [61, 75] },
-            ].map(({ letter, range }) => (
-              <div key={letter} style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '4px' }}>
-                <div style={{
-                  background: letter === 'B' ? '#3B82F6' : (letter === 'I' ? '#EF4444' : (letter === 'N' ? '#F59E0B' : (letter === 'G' ? '#10B981' : '#8B5CF6'))),
-                  color: '#FFF',
-                  fontWeight: 900,
-                  fontSize: '0.65rem',
-                  borderRadius: '3px',
-                  textAlign: 'center',
-                  padding: '1px 0'
-                }}>
-                  {letter}
-                </div>
-
-                {Array.from({ length: 15 }, (_, idx) => range[0] + idx).map((num) => {
+          {/* 15 Rows Grid */}
+          <div style={{
+            flex: 1,
+            display: 'grid',
+            gridTemplateRows: 'repeat(15, 1fr)',
+            gap: '2px',
+            padding: '1px 3px 3px 3px'
+          }}>
+            {Array.from({ length: 15 }).map((_, rowIdx) => (
+              <div key={rowIdx} style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '2px' }}>
+                {[
+                  rowIdx + 1,        // B
+                  rowIdx + 16,       // I
+                  rowIdx + 31,       // N
+                  rowIdx + 46,       // G
+                  rowIdx + 61        // O
+                ].map((num) => {
                   const isDrawn = drawnSet.has(num);
                   const isLatest = latestDrawn?.number === num;
+
+                  let bg = '#FFFFFF';
+                  let textColor = '#0F172A';
+                  if (isLatest) {
+                    bg = '#10B981';
+                    textColor = '#FFFFFF';
+                  } else if (isDrawn) {
+                    bg = '#F59E0B';
+                    textColor = '#FFFFFF';
+                  }
 
                   return (
                     <div
                       key={num}
-                      className={`master-board-cell ${isLatest ? 'latest' : (isDrawn ? 'called' : '')}`}
+                      style={{
+                        background: bg,
+                        color: textColor,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 900,
+                        fontSize: '0.78rem',
+                        borderRadius: '3px',
+                        border: '1px solid #E2E8F0'
+                      }}
                     >
                       {num}
                     </div>
@@ -251,103 +274,205 @@ export const BingoGameView: React.FC<BingoGameViewProps> = ({ roundId, purchased
             ))}
           </div>
 
-          {/* Player Card & Controls (Right) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            
-            {/* Recent Callouts Header Bar */}
+          {/* Bottom Left Footer */}
+          <div style={{
+            background: '#131C2E',
+            color: '#FFFFFF',
+            padding: '6px 8px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: '2px',
+            borderTop: '1px solid #1E293B'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.62rem' }}>
+              <span style={{ color: '#64748B', fontWeight: 800 }}>ROOM</span>
+              <span 
+                onClick={() => window.location.reload()} 
+                style={{ color: '#94A3B8', fontSize: '0.6rem', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '2px' }}
+              >
+                <RefreshCw className="w-3 h-3 inline" /> REFRESH
+              </span>
+            </div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              VIP 💰 💰
+            </div>
+          </div>
+        </div>
+
+        {/* Right Area: Player Card & Recent Indicator */}
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '16px 10px',
+          gap: '20px',
+          overflowY: 'auto'
+        }}>
+          {/* Top Indicator Pill */}
+          <div style={{
+            background: '#FFFFFF',
+            borderRadius: '999px',
+            padding: '6px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            border: '1px solid #E2E8F0'
+          }}>
+            {[0, 1, 2].map((idx) => {
+              const call = recentCallouts[idx];
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    background: call ? '#10B981' : '#F1F5F9',
+                    color: call ? '#FFFFFF' : 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.65rem',
+                    fontWeight: 800
+                  }}
+                >
+                  {call ? call.number : ''}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 5x5 Player Card Container */}
+          <div style={{
+            width: '100%',
+            maxWidth: '310px',
+            background: '#FFFFFF',
+            borderRadius: '24px',
+            boxShadow: '0 12px 32px rgba(0,0,0,0.07)',
+            overflow: 'hidden',
+            border: '1px solid #E2E8F0',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            {/* Header row B I N G O */}
             <div style={{
-              background: '#FFFFFF',
-              border: '1px solid #E2E8F0',
-              borderRadius: 'var(--radius-md)',
-              padding: '8px 10px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              overflowX: 'auto'
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gap: '8px',
+              padding: '12px 12px 6px 12px'
             }}>
-              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#64748B' }}>Calls:</span>
-              {recentCallouts.length > 0 ? (
-                recentCallouts.map((call, idx) => (
-                  <span 
-                    key={idx}
-                    style={{
-                      background: idx === 0 ? '#10B981' : '#F1F5F9',
-                      color: idx === 0 ? '#FFFFFF' : '#1E293B',
-                      padding: '2px 8px',
-                      borderRadius: 'var(--radius-sm)',
-                      fontSize: '0.75rem',
-                      fontWeight: 800
-                    }}
-                  >
-                    [{call.letter}{call.number}]
-                  </span>
-                ))
-              ) : (
-                <span style={{ fontSize: '0.72rem', color: '#94A3B8' }}>Waiting for first draw...</span>
+              <div style={{ background: '#2563EB', color: '#FFF', fontWeight: 900, fontStyle: 'italic', fontSize: '1.25rem', height: '42px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>B</div>
+              <div style={{ background: '#EF4444', color: '#FFF', fontWeight: 900, fontStyle: 'italic', fontSize: '1.25rem', height: '42px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>I</div>
+              <div style={{ background: '#F59E0B', color: '#FFF', fontWeight: 900, fontStyle: 'italic', fontSize: '1.25rem', height: '42px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>N</div>
+              <div style={{ background: '#10B981', color: '#FFF', fontWeight: 900, fontStyle: 'italic', fontSize: '1.25rem', height: '42px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>G</div>
+              <div style={{ background: '#8B5CF6', color: '#FFF', fontWeight: 900, fontStyle: 'italic', fontSize: '1.25rem', height: '42px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>O</div>
+            </div>
+
+            {/* 5x5 Grid Cells */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gap: '8px',
+              padding: '6px 12px 14px 12px'
+            }}>
+              {activeMatrix.flatMap((row, r) =>
+                row.map((val, c) => {
+                  const isFree = r === 2 && c === 2;
+                  const isMarked = markedCells.has(`${r}-${c}`);
+
+                  if (isFree) {
+                    return (
+                      <div
+                        key={`${r}-${c}`}
+                        onClick={() => toggleCell(r, c)}
+                        style={{
+                          background: '#10B981',
+                          height: '46px',
+                          borderRadius: '10px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <Star style={{ fill: '#2563EB', color: '#2563EB', width: 22, height: 22 }} />
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={`${r}-${c}`}
+                      onClick={() => toggleCell(r, c)}
+                      style={{
+                        background: isMarked ? '#10B981' : '#F1F5F9',
+                        color: isMarked ? '#FFFFFF' : '#0F172A',
+                        height: '46px',
+                        borderRadius: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.25rem',
+                        fontWeight: 900,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {val}
+                    </div>
+                  );
+                })
               )}
             </div>
 
-            {/* 5x5 Bingo Grid Card */}
-            <div className="glass-card gold-border" style={{ padding: '12px', margin: 0 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontSize: '0.92rem', fontWeight: 900, color: '#F59E0B' }}>
-                  Card #{purchasedCard.card_number}
-                </span>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>
-                  Pattern: Full House / Line
-                </span>
-              </div>
+            {/* BINGO! Action Button */}
+            <button
+              disabled={claiming}
+              onClick={handleBingoClaim}
+              style={{
+                width: '100%',
+                background: '#2563EB',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '16px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                cursor: claiming ? 'not-allowed' : 'pointer',
+                borderBottomLeftRadius: '24px',
+                borderBottomRightRadius: '24px'
+              }}
+            >
+              <span style={{
+                fontStyle: 'italic',
+                fontWeight: 900,
+                fontSize: '1.85rem',
+                letterSpacing: '1px',
+                color: '#FFFFFF',
+                textShadow: '0 2px 4px rgba(0,0,0,0.15)'
+              }}>
+                BINGO!
+              </span>
 
-              <div className="bingo-grid-container">
-                <div className="bingo-headers">
-                  <div className="letter-header letter-b">B</div>
-                  <div className="letter-header letter-i">I</div>
-                  <div className="letter-header letter-n">N</div>
-                  <div className="letter-header letter-g">G</div>
-                  <div className="letter-header letter-o">O</div>
-                </div>
-
-                <div className="bingo-matrix">
-                  {purchasedCard.grid_matrix.flatMap((row, r) => 
-                    row.map((val, c) => {
-                      const isFree = r === 2 && c === 2;
-                      const isMarked = markedCells.has(`${r}-${c}`);
-
-                      return (
-                        <div
-                          key={`${r}-${c}`}
-                          className={`bingo-cell ${isMarked ? 'marked' : ''} ${isFree ? 'free-space' : ''}`}
-                          onClick={() => toggleCell(r, c)}
-                        >
-                          {isFree ? '★' : val}
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-
-              {/* Action Blue BINGO! Claim Button with Card Badge */}
-              <button 
-                className="btn-primary"
-                style={{ 
-                  marginTop: '12px',
-                  fontSize: '1.25rem',
-                  padding: '12px',
-                  background: '#2563EB',
-                  boxShadow: '0 4px 16px rgba(37, 99, 235, 0.35)'
-                }}
-                disabled={claiming || roundStatus !== 'PLAYING'}
-                onClick={handleBingoClaim}
-              >
-                <Flame className="w-5 h-5 inline mr-1" />
-                {claiming ? 'VERIFYING...' : `BINGO! #${purchasedCard.card_number}`}
-              </button>
-            </div>
-
+              <span style={{
+                position: 'absolute',
+                right: '14px',
+                bottom: '10px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#93C5FD'
+              }}>
+                #{cardNum}
+              </span>
+            </button>
           </div>
         </div>
-      )}
+
+      </div>
 
       {/* Disqualification Penalty Overlay */}
       {disqualified && (

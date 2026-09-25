@@ -14,5 +14,7 @@ services:
         value: 7631583464:AAFpsgbtwfdxCCEwUvwhwyGhf-oo1TgzhQA
       - key: SECRET_KEY
         generateValue: true
+      - key: WEB_APP_URL
+        sync: false
       - key: REDIS_URL
         sync: false

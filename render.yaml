@@ -8,6 +8,8 @@ services:
     envVars:
       - key: ENVIRONMENT
         value: production
+      - key: DATABASE_URL
+        value: sqlite+aiosqlite:///bingo.db
       - key: BOT_TOKEN
         value: 7631583464:AAFpsgbtwfdxCCEwUvwhwyGhf-oo1TgzhQA
       - key: SECRET_KEY

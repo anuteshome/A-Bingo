@@ -11,7 +11,7 @@ services:
       - key: DATABASE_URL
         value: sqlite+aiosqlite:///bingo.db
       - key: BOT_TOKEN
-        value: 7631583464:AAFpsgbtwfdxCCEwUvwhwyGhf-oo1TgzhQA
+        value: 8990850541:AAGFCIi6qLtQydYp7q4DyHZHqnO-3VrF3pg
       - key: SECRET_KEY
         generateValue: true
       - key: WEB_APP_URL

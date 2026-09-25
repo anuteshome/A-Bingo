@@ -52,7 +52,7 @@ Render offers free hosting for web services and managed Redis.
 3. Create a **New Web Service** $\rightarrow$ connect `Bingo_Telegram_Bot` repo.
 4. Select **Dockerfile** runtime.
 5. Set Environment Variables:
-   - `BOT_TOKEN` = `7631583464:AAFpsgbtwfdxCCEwUvwhwyGhf-oo1TgzhQA`
+   - `BOT_TOKEN` = `8990850541:AAGFCIi6qLtQydYp7q4DyHZHqnO-3VrF3pg`
    - `REDIS_URL` = `<YOUR_RENDER_REDIS_URL>`
    - `ENVIRONMENT` = `production`
 6. Click **Create Web Service**.

@@ -34,7 +34,7 @@ services:
       - ENVIRONMENT=production
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/bingo_db
       - REDIS_URL=redis://redis:6379/0
-      - BOT_TOKEN=7631583464:AAFpsgbtwfdxCCEwUvwhwyGhf-oo1TgzhQA
+      - BOT_TOKEN=8990850541:AAGFCIi6qLtQydYp7q4DyHZHqnO-3VrF3pg
       - SECRET_KEY=dev_super_secret_jwt_hmac_key_bingo_telegram_2026_9999
     ports:
       - "8000:8000"

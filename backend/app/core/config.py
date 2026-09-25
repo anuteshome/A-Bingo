@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
     
     # Telegram Auth & Mini App
-    BOT_TOKEN: str = "7631583464:AAFpsgbtwfdxCCEwUvwhwyGhf-oo1TgzhQA"
+    BOT_TOKEN: str = "8990850541:AAGFCIi6qLtQydYp7q4DyHZHqnO-3VrF3pg"
     WEB_APP_URL: str = "https://adjustments-benefits-contract-concert.trycloudflare.com"
     
     # Security JWT
